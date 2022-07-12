@@ -4,43 +4,38 @@ import userEvent from '@testing-library/user-event';
 import renderWithRouter from '../renderWithRouter';
 import App from '../App';
 
-describe('test PokemonDetails component', () => {
-  const pagaPath = '/pokemons/25';
-  it('Teste se as informações detalhadas do Pokémon selecionado são mostradas.', () => {
-    const { history } = renderWithRouter(<App />);
-    history.push(pagaPath);
+describe('Teste componente <Pokemon />', () => {
+  it('Teste se é renderizado um card com as informações de determinado pokémon.', () => {
+    renderWithRouter(<App />);
+    const pokemName = screen.getByTestId('pokemon-name');
+    const pokemType = screen.getByTestId('pokemon-type');
+    const pokemWeight = screen.getByTestId('pokemon-weight');
+    const pokemImg = screen.getByAltText('Pikachu sprite');
+    const src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png';
 
-    screen.getByRole('heading', { name: /pikachu details/i });
-    screen.getByRole('heading', { name: /summary/i, level: 2 });
-    screen.getByText(/This intelligent Pokémon/i);
+    expect(pokemName).toHaveTextContent('Pikachu');
+    expect(pokemType).toHaveTextContent('Electric');
+    expect(pokemWeight).toHaveTextContent('Average weight: 6.0 kg');
+    expect(pokemImg).toHaveAttribute('src', src);
   });
 
-  it('Teste se existe uma seção com os mapas contendo as localizações do pokémon',
-    () => {
-      const { history } = renderWithRouter(<App />);
-      history.push(pagaPath);
+  it('Teste se redireciona para a página certa ao clicar no link de detalhes', () => {
+    const { history } = renderWithRouter(<App />);
 
-      screen.getByRole('heading', { name: /game locations of pikachu/i });
+    const details = screen.getByRole('link', { name: /more details/i });
+    userEvent.click(details);
+    const { pathname } = history.location;
+    expect(pathname).toEqual('/pokemons/25');
+  });
 
-      const images = screen.getAllByAltText(/pikachu location/i);
-      const src1 = 'https://cdn2.bulbagarden.net/upload/0/08/Kanto_Route_2_Map.png';
-      const src2 = 'https://cdn2.bulbagarden.net/upload/b/bd/Kanto_Celadon_City_Map.png';
-      screen.getByText(/kanto power plant/i);
-      screen.getByText(/kanto viridian forest/i);
+  it('verify if have star icon for favorite pokemon', () => {
+    renderWithRouter(<App />);
+    const details = screen.getByRole('link', { name: /more details/i });
+    userEvent.click(details);
 
-      expect(images[0]).toHaveAttribute('src', src1);
-      expect(images[1]).toHaveAttribute('src', src2);
-    });
-
-  it('Teste se o usuário pode favoritar um pokémon através da página de detalhes.',
-    () => {
-      const { history } = renderWithRouter(<App />);
-      history.push(pagaPath);
-      const checkbox = screen.getByRole('checkbox', { name: /pokémon favoritado/i });
-
-      userEvent.click(checkbox);
-      const checked = screen.getByAltText('Pikachu is marked as favorite');
-      userEvent.click(checkbox);
-      expect(checked).not.toBeInTheDocument();
-    });
+    const favoriteCheckbox = screen.getByLabelText(/pokémon favoritado/i);
+    userEvent.click(favoriteCheckbox);
+    const favorite = screen.getByAltText('Pikachu is marked as favorite');
+    expect(favorite).toHaveAttribute('src', '/star-icon.svg');
+  });
 });

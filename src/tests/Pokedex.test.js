@@ -64,7 +64,6 @@ describe('Teste o componente <Pokedex.js />', () => {
     screen.getAllByTestId('pokemon-type-button');
     pokemonTypes.forEach((type) => {
       const typeButton = screen.getByRole('button', { name: type });
-      console.log(typeButton);
       userEvent.click(typeButton);
       const pokemonType = screen.getAllByText(type);
       expect(pokemonType).toHaveLength(2);
